@@ -207,7 +207,7 @@
     }
 
 #define vec_define_free_simple(type, name)                                     \
-    static inline void _VCFN(fn_name, clear)(name * v) {                       \
+    static inline void _VCFN(name, clear)(name * v) {                          \
         if (!v->data)                                                          \
             return;                                                            \
         free(v->data);                                                         \
@@ -216,10 +216,10 @@
         v->capacity = 0;                                                       \
     }                                                                          \
                                                                                \
-    static inline void _VCFN(fn_name, resize)(name * v, size_t n,              \
+    static inline void _VCFN(name, resize)(name * v, size_t n,                 \
                                               type def_val) {                  \
         if (n > v->capacity) {                                                 \
-            _VCFN(fn_name, realloc)(v, n);                                     \
+            _VCFN(name, realloc)(v, n);                                        \
             while (v->size < n) {                                              \
                 v->data[v->size++] = def_val;                                  \
             }                                                                  \
