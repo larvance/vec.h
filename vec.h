@@ -13,9 +13,11 @@
  * License: MIT
  */
 
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // This macro is used to create a unique function name by concatenating
 #define _VCFN(fn_name, op) fn_name##_##op
@@ -29,6 +31,8 @@
             putchar(' ');                                                      \
     } while (0)
 
+#define vec() {.data = NULL, .size = 0, .capacity = 0}
+
 #define vec_define(type, name) vec_define2(type, name, name)
 
 #define vec_define2(type, name, fn_name)                                       \
@@ -36,6 +40,9 @@
         size_t size, capacity;                                                 \
         type *data;                                                            \
     } name;                                                                    \
+    vec_define3(type, name, fn_name)
+
+#define vec_define3(type, name, fn_name)                                       \
                                                                                \
     static inline name *_VCFN(fn_name, alloc)(void) {                          \
         return (name *)malloc(sizeof(name));                                   \
@@ -47,6 +54,7 @@
         v->capacity = reserved;                                                \
         if (!(v->data = malloc(sizeof(type) * v->capacity))) {                 \
             perror("malloc failed");                                           \
+            raise(SIGSEGV);                                                    \
             exit(EXIT_FAILURE);                                                \
         }                                                                      \
     }                                                                          \
@@ -65,12 +73,14 @@
             v->data = malloc(sizeof(type) * n);                                \
             if (!v->data) {                                                    \
                 perror("malloc failed");                                       \
+                raise(SIGSEGV);                                                \
                 exit(EXIT_FAILURE);                                            \
             }                                                                  \
         } else {                                                               \
             type *newData = realloc(v->data, sizeof(type) * n);                \
             if (!newData) {                                                    \
                 perror("realloc failed");                                      \
+                raise(SIGSEGV);                                                \
                 exit(EXIT_FAILURE);                                            \
             }                                                                  \
             v->data = newData;                                                 \
@@ -102,6 +112,7 @@
     static inline type _VCFN(fn_name, at)(name v, size_t i) {                  \
         if (i < 0 || i >= v.size) {                                            \
             perror("vector index out of bounds");                              \
+            raise(SIGSEGV);                                                    \
             exit(EXIT_FAILURE);                                                \
         }                                                                      \
                                                                                \
@@ -111,6 +122,7 @@
     static inline void _VCFN(fn_name, set)(name * v, size_t i, type x) {       \
         if (i < 0 || i >= v->size) {                                           \
             perror("vector index out of bounds");                              \
+            raise(SIGSEGV);                                                    \
             exit(EXIT_FAILURE);                                                \
         }                                                                      \
                                                                                \
@@ -133,6 +145,14 @@
             v->data[i] = v->data[v->size - 1 - i];                             \
             v->data[v->size - 1 - i] = tmp;                                    \
         }                                                                      \
+    }                                                                          \
+                                                                               \
+    static inline name _VCFN(fn_name, shallow_copy)(name v) {                  \
+        name res = {.size = v.size,                                            \
+                    .capacity = v.capacity,                                    \
+                    .data = (type *)malloc(sizeof(type) * v.capacity)};        \
+        memcpy(res.data, v.data, sizeof(type) * v.capacity);                   \
+        return res;                                                            \
     }
 
 #define vec_define_contains(type, name, eq_st)                                 \
@@ -216,8 +236,7 @@
         v->capacity = 0;                                                       \
     }                                                                          \
                                                                                \
-    static inline void _VCFN(name, resize)(name * v, size_t n,                 \
-                                              type def_val) {                  \
+    static inline void _VCFN(name, resize)(name * v, size_t n, type def_val) { \
         if (n > v->capacity) {                                                 \
             _VCFN(name, realloc)(v, n);                                        \
             while (v->size < n) {                                              \
@@ -273,6 +292,19 @@
     vec_define_print(type, type##s, printf(fmt, a));                           \
     vec_define_contains(type, type##s, a == b);                                \
     vec_define_sort(type, type##s, a - b);                                     \
-    vec_Define_free(type, type##s);
+    vec_define_free(type, type##s);
+
+#define vec_define_copy_simple(type, name)                                     \
+    vec_define_copy(type, name, res.data[i] = v.data[i])
+#define vec_define_copy(type, name, copy_st)                                   \
+    static inline name _VCFN(fn_name, copy)(name v) {                          \
+        name res = {.size = v.size,                                            \
+                    .capacity = v.capacity,                                    \
+                    .data = (type *)malloc(sizeof(type) * v.capacity)};        \
+        for (size_t i = 0; i < v.size; i++) {                                  \
+            copy_st;                                                           \
+        }                                                                      \
+        return res;                                                            \
+    }
 
 #endif // VEC_H_DEFINED

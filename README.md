@@ -150,7 +150,7 @@ Once defined, you can call functions like `NAME_init`, `NAME_push`, etc.
 ### 🔧 Initialization & Allocation
 
 | Function                           | Description                                   | Example                       |
-| ---------------------------------- | --------------------------------------------- | ----------------------------- |
+|------------------------------------|-----------------------------------------------|-------------------------------|
 | `NAME_alloc()`                     | Allocates a vector on the heap.               | `NAME *v = NAME_alloc();`     |
 | `NAME_init(&v)`                    | Initializes vector with default capacity (4). | `NAME_init(&v);`              |
 | `NAME_init_reserved(&v, capacity)` | Initializes vector with specific capacity.    | `NAME_init_reserved(&v, 16);` |
@@ -159,20 +159,21 @@ Once defined, you can call functions like `NAME_init`, `NAME_push`, etc.
 
 ### 📦 Data Manipulation
 
-| Function                     | Description                                   | Example                     |
-| ---------------------------- | --------------------------------------------- | --------------------------- |
-| `NAME_push(&v, value)`       | Adds an element to the end.                   | `NAME_push(&v, 42);`        |
-| `NAME_pop(&v)`               | Removes and returns the last element.         | `int x = NAME_pop(&v);`     |
-| `NAME_back(v)`               | Gets a pointer to the last element.           | `int *last = NAME_back(v);` |
-| `NAME_at(v, index)`          | Gets a value at an index (with bounds check). | `int x = NAME_at(v, 2);`    |
-| `NAME_set(&v, index, value)` | Sets the value at a given index.              | `NAME_set(&v, 1, 99);`      |
+| Function                     | Description                                         | Example                               |
+|------------------------------|-----------------------------------------------------|---------------------------------------|
+| `NAME_push(&v, value)`       | Adds an element to the end.                         | `NAME_push(&v, 42);`                  |
+| `NAME_pop(&v)`               | Removes and returns the last element.               | `int x = NAME_pop(&v);`               |
+| `NAME_back(v)`               | Gets a pointer to the last element.                 | `int *last = NAME_back(v);`           |
+| `NAME_at(v, index)`          | Gets a value at an index (with bounds check).       | `int x = NAME_at(v, 2);`              |
+| `NAME_set(&v, index, value)` | Sets the value at a given index.                    | `NAME_set(&v, 1, 99);`                |
+| `NAME_shallow_copy(v)`       | Copies the vector without allocating every element. | `NAME copied = NAME_shallow_copy(v);` |
 
 ---
 
 ### 🧹 Management
 
 | Function                     | Description                                           | Example                              |
-| ---------------------------- | ----------------------------------------------------- | ------------------------------------ |
+|------------------------------|-------------------------------------------------------|--------------------------------------|
 | `NAME_empty(v)`              | Checks if vector is empty. Returns 1 or 0.            | `if (NAME_empty(v)) { /* empty */ }` |
 | `NAME_reverse(&v)`           | Reverses the vector.                                  | `NAME_reverse(&v);`                  |
 | `NAME_shrink(&v)`            | Shrinks capacity to match size. (saves memory)        | `NAME_shrink(&v);`                   |
@@ -186,14 +187,15 @@ Once defined, you can call functions like `NAME_init`, `NAME_push`, etc.
 Here's a quick overview of optional methods you can define for your vector type:
 
 | Defined with          | Function                                   | Description                                               | Example                                     |
-| --------------------- | ------------------------------------------ | --------------------------------------------------------- | ------------------------------------------- |
+|-----------------------|--------------------------------------------|-----------------------------------------------------------|---------------------------------------------|
 | `vec_define_contains` | `NAME_contains(v, value)`                  | Checks if the vector contains a value. Returns 1 or 0.    | `if (NAME_contains(v, 42)) { /* found */ }` |
 | `vec_define_sort`     | `NAME_sort(&v)`                            | Sorts the vector in place.                                | `NAME_sort(&v);`                            |
 | `vec_define_sort`     | `NAME_sort_reversed(&v)`                   | Sorts the vector in place (in reverse).                   | `NAME_sort_reversed(&v);`                   |
 | `vec_define_print`    | `NAME_print(v)`                            | Prints the vector elements.                               | `NAME_print(v);`                            |
 | `vec_define_print`    | `NAME_print_indent(v, indent)`             | Prints the vector elements with the given indentation.    | `NAME_print_indent(v, 6);`                  |
-| `vec_define_free`     | `NAME_resize(&v, new_size, default_value)` | Resizes the vector, filling new slots with default value. | `NAME_resize(&v, 10, default_value);`       |
-| `vec_define_free`     | `NAME_clear(&v)`                           | Frees every element and sets the size to 0.               | `NAME_clear(&v);`                           |
+| `vec_define_resize`   | `NAME_resize(&v, new_size, default_value)` | Resizes the vector, filling new slots with default value. | `NAME_resize(&v, 10, default_value);`       |
+| `vec_define_clear`    | `NAME_clear(&v)`                           | Frees every element and sets the size to 0.               | `NAME_clear(&v);`                           |
+| `vec_define_copy`     | `NAME_copy(v)`                             | Copies every element of the vector.                       | `NAME newCopy = NAME_copy(v);`              |
 
 Here are the macros to define these optional methods:
 
